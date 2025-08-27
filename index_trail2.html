@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Predictor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* Minimalistic CSS Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: #667eea;
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            background: white;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        /* Grid Layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Result Styles */
+        .result-card {
+            margin-top: 2rem;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .result-positive {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #721c24;
+        }
+        
+        .result-negative {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #0f5132;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 1rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="fas fa-heartbeat"></i> HeartCheck AI
+            </a>
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="/visualization"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                <li><a href="/about"><i class="fas fa-info-circle"></i> About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+       
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Add fade-in animation to elements
+        document.addEventListener('DOMContentLoaded', function() {
+            const elements = document.querySelectorAll('.card');
+            elements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+                el.classList.add('fade-in');
+            });
+        });
+    </script>
+    
+    
+</body>
+</html>
+
+<!-- templates/index.html -->
+
+<div class="card fade-in">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="color: #667eea; margin-bottom: 1rem;">
+            <i class="fas fa-heartbeat"></i> Heart Disease Risk Assessment
+        </h1>
+        <p style="color: #666; font-size: 1.1rem;">
+            Get an AI-powered assessment of your heart disease risk based on clinical parameters
+        </p>
+        <div style="margin-top: 1rem; padding: 1rem; background: #fff3cd; border-radius: 10px; color: #856404;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Disclaimer:</strong> This is an AI prediction tool for educational purposes only, not a medical diagnosis.
+        </div>
+    </div>
+
+    <form id="predictionForm">
+        <div class="form-grid">
+            <!-- Basic Information -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-calendar-alt"></i> Age (years)
+                </label>
+                <input type="number" name="age" class="form-input" required min="1" max="120" placeholder="Enter your age">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-venus-mars"></i> Sex
+                </label>
+                <select name="sex" class="form-select" required>
+                    <option value="">Select your sex</option>
+                    <option value="0">Female</option>
+                    <option value="1">Male</option>
+                </select>
+            </div>
+
+            <!-- Chest Pain Information -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-heart"></i> Chest Pain Type
+                </label>
+                <select name="cp" class="form-select" required>
+                    <option value="">Select chest pain type</option>
+                    <option value="0">Typical Angina</option>
+                    <option value="1">Atypical Angina</option>
+                    <option value="2">Non-Anginal Pain</option>
+                    <option value="3">Asymptomatic</option>
+                </select>
+            </div>
+
+            <!-- Vital Signs -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-tachometer-alt"></i> Resting Blood Pressure (mmHg)
+                </label>
+                <input type="number" name="trestbps" class="form-input" required min="50" max="300" placeholder="e.g., 120">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-vial"></i> Cholesterol (mg/dl)
+                </label>
+                <input type="number" name="chol" class="form-input" required min="100" max="600" placeholder="e.g., 200">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-cube"></i> Fasting Blood Sugar > 120 mg/dl
+                </label>
+                <select name="fbs" class="form-select" required>
+                    <option value="">Select option</option>
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+
+            <!-- ECG and Heart Rate -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-wave-square"></i> Resting ECG Results
+                </label>
+                <select name="restecg" class="form-select" required>
+                    <option value="">Select ECG result</option>
+                    <option value="0">Normal</option>
+                    <option value="1">ST-T Wave Abnormality</option>
+                    <option value="2">Left Ventricular Hypertrophy</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-heartbeat"></i> Maximum Heart Rate Achieved
+                </label>
+                <input type="number" name="thalach" class="form-input" required min="60" max="220" placeholder="e.g., 150">
+            </div>
+
+            <!-- Exercise Information -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-running"></i> Exercise Induced Angina
+                </label>
+                <select name="exang" class="form-select" required>
+                    <option value="">Select option</option>
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-chart-line"></i> ST Depression (Exercise vs Rest)
+                </label>
+                <input type="number" name="oldpeak" class="form-input" step="0.1" required min="0" max="10" placeholder="e.g., 1.5">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-angle-up"></i> Slope of ST Segment
+                </label>
+                <select name="slope" class="form-select" required>
+                    <option value="">Select slope</option>
+                    <option value="0">Upsloping</option>
+                    <option value="1">Flat</option>
+                    <option value="2">Downsloping</option>
+                </select>
+            </div>
+
+            <!-- Advanced Parameters -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-eye"></i> Vessels Colored by Fluoroscopy
+                </label>
+                <select name="ca" class="form-select" required>
+                    <option value="">Select number</option>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-microscope"></i> Thalassemia
+                </label>
+                <select name="thal" class="form-select" required>
+                    <option value="">Select type</option>
+                    <option value="1">Normal</option>
+                    <option value="2">Fixed Defect</option>
+                    <option value="3">Reversible Defect</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <button type="submit" class="btn" id="predictBtn">
+                <i class="fas fa-search"></i> Analyze Heart Risk
+            </button>
+        </div>
+    </form>
+
+    <!-- Loading Spinner -->
+    <div id="loading" style="display: none; text-align: center; margin-top: 2rem;">
+        <div class="spinner"></div>
+        <p style="margin-top: 1rem; color: #666;">Analyzing your data...</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results" style="display: none;"></div>
+</div>
+
+<script>
+document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Show loading, hide results
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('predictBtn').disabled = true;
+    
+    // Get form data
+    const formData = new FormData(this);
+    
+    try {
+        // Send prediction request
+        const response = await fetch('/predict', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        // Hide loading
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('predictBtn').disabled = false;
+        
+        // Show results
+        if (result.error) {
+            showError(result.error);
+        } else {
+            showResults(result);
+        }
+        
+    } catch (error) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('predictBtn').disabled = false;
+        showError('Network error. Please try again.');
+    }
+});
+
+function showResults(result) {
+    const resultsDiv = document.getElementById('results');
+    const isHighRisk = result.prediction === 1;
+    
+    resultsDiv.className = `result-card ${isHighRisk ? 'result-positive' : 'result-negative'}`;
+    resultsDiv.innerHTML = `
+        <h3 style="margin-bottom: 1rem;">
+            <i class="fas ${isHighRisk ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i>
+            Risk Assessment Results
+        </h3>
+        <div style="font-size: 1.2rem; margin-bottom: 1rem;">
+            <strong>${result.message}</strong>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+            <div>
+                <div style="font-size: 2rem; font-weight: bold;">${result.risk_percentage}%</div>
+                <div style="opacity: 0.8;">Risk Level</div>
+            </div>
+            <div>
+                <div style="font-size: 2rem; font-weight: bold;">${(result.confidence * 100).toFixed(1)}%</div>
+                <div style="opacity: 0.8;">Confidence</div>
+            </div>
+        </div>
+        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.3); border-radius: 10px;">
+            <strong>Important:</strong> This prediction is based on AI analysis of your input data. 
+            ${isHighRisk ? 'Please consult with a healthcare professional for proper medical evaluation.' : 'Continue maintaining a healthy lifestyle and regular check-ups.'}
+        </div>
+    `;
+    resultsDiv.style.display = 'block';
+}
+
+function showError(message) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.className = 'result-card result-positive';
+    resultsDiv.innerHTML = `
+        <h3><i class="fas fa-exclamation-circle"></i> Error</h3>
+        <p>${message}</p>
+    `;
+    resultsDiv.style.display = 'block';
+}
+</script>
+
+
+<!-- templates/visualization.html -->
+
+<div class="card fade-in">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="color: #667eea; margin-bottom: 1rem;">
+            <i class="fas fa-chart-bar"></i> Model Analytics & Visualization
+        </h1>
+        <p style="color: #666; font-size: 1.1rem;">
+            Explore the data patterns and model performance insights
+        </p>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <button id="generateChart" class="btn">
+            <i class="fas fa-chart-line"></i> Generate Analytics Chart
+        </button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="chartLoading" style="display: none; text-align: center; margin: 2rem 0;">
+        <div class="spinner"></div>
+        <p style="margin-top: 1rem; color: #666;">Generating visualizations...</p>
+    </div>
+
+    <!-- Chart Container -->
+    <div id="chartContainer" style="display: none; text-align: center; margin-top: 2rem;">
+        <img id="chartImage" style="max-width: 100%; height: auto; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);" />
+    </div>
+</div>
+
+<div class="card fade-in" style="margin-top: 2rem;">
+    <h2 style="color: #667eea; margin-bottom: 1.5rem;">
+        <i class="fas fa-info-circle"></i> Dataset Information
+    </h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px;">
+            <h3 style="color: #495057; margin-bottom: 1rem;">Key Features</h3>
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> Age, Sex, Chest Pain Type</li>
+                <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> Blood Pressure & Cholesterol</li>
+                <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> ECG Results & Heart Rate</li>
+                <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #28a745; margin-right: 0.5rem;"></i> Exercise Parameters</li>
+            </ul>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px;">
+            <h3 style="color: #495057; margin-bottom: 1rem;">Model Details</h3>
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 0.5rem;"><i class="fas fa-cog" style="color: #667eea; margin-right: 0.5rem;"></i> Random Forest Classifier</li>
+                <li style="margin-bottom: 0.5rem;"><i class="fas fa-cog" style="color: #667eea; margin-right: 0.5rem;"></i> 100 Decision Trees</li>
+                <li style="margin-bottom: 0.5rem;"><i class="fas fa-cog" style="color: #667eea; margin-right: 0.5rem;"></i> StandardScaler Preprocessing</li>
+                <li style="margin-bottom: 0.5rem;"><i class="fas fa-cog" style="color: #667eea; margin-right: 0.5rem;"></i> 80/20 Train-Test Split</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('generateChart').addEventListener('click', async function() {
+    // Show loading
+    document.getElementById('chartLoading').style.display = 'block';
+    document.getElementById('chartContainer').style.display = 'none';
+    this.disabled = true;
+    
+    try {
+        const response = await fetch('/generate_chart');
+        const result = await response.json();
+        
+        // Hide loading
+        document.getElementById('chartLoading').style.display = 'none';
+        this.disabled = false;
+        
+        if (result.error) {
+            alert('Error generating chart: ' + result.error);
+        } else {
+            // Show chart
+            document.getElementById('chartImage').src = 'data:image/png;base64,' + result.chart;
+            document.getElementById('chartContainer').style.display = 'block';
+        }
+        
+    } catch (error) {
+        document.getElementById('chartLoading').style.display = 'none';
+        this.disabled = false;
+        alert('Network error. Please try again.');
+    }
+});
+</script>
+
+<!-- templates/about.html -->
+<div class="card fade-in">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="color: #667eea; margin-bottom: 1rem;">
+            <i class="fas fa-info-circle"></i> About HeartCheck AI
+        </h1>
+        <p style="color: #666; font-size: 1.1rem;">
+            AI-powered heart disease risk assessment tool
+        </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
+        <div>
+            <h2 style="color: #495057; margin-bottom: 1rem;">
+                <i class="fas fa-heart" style="color: #e74c3c;"></i> What We Do
+            </h2>
+            <p style="color: #666; line-height: 1.8; margin-bottom: 1.5rem;">
+                HeartCheck AI uses machine learning algorithms to analyze various health parameters and provide 
+                an assessment of heart disease risk. Our model is trained on clinical data and uses a Random Forest 
+                classifier to make predictions based on 13 key health indicators.
+            </p>
+            
+            <h3 style="color: #495057; margin-bottom: 0.5rem;">Key Features:</h3>
+            <ul style="color: #666; line-height: 1.6;">
+                <li>Instant risk assessment</li>
+                <li>User-friendly interface</li>
+                <li>Data visualization and analytics</li>
+                <li>Educational health information</li>
+            </ul>
+        </div>
+
+        <div>
+            <h2 style="color: #495057; margin-bottom: 1rem;">
+                <i class="fas fa-brain" style="color: #9b59b6;"></i> How It Works
+            </h2>
+            <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                <ol style="color: #666; line-height: 1.8;">
+                    <li><strong>Input:</strong> You provide 13 health parameters</li>
+                    <li><strong>Processing:</strong> Data is standardized and analyzed</li>
+                    <li><strong>Prediction:</strong> AI model calculates risk probability</li>
+                    <li><strong>Result:</strong> You receive risk assessment with confidence level</li>
+                </ol>
+            </div>
+            
+            <h3 style="color: #495057; margin-bottom: 0.5rem;">Technical Details:</h3>
+            <ul style="color: #666; line-height: 1.6;">
+                <li>Random Forest Algorithm (100 trees)</li>
+                <li>Feature standardization with StandardScaler</li>
+                <li>Cross-validation for model reliability</li>
+                <li>Probability-based confidence scoring</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card fade-in" style="margin-top: 2rem;">
+    <h2 style="color: #667eea; margin-bottom: 1.5rem; text-align: center;">
+        <i class="fas fa-exclamation-triangle"></i> Important Disclaimers
+    </h2>
+    
+    <div style="background: #fff3cd; padding: 2rem; border-radius: 15px; border-left: 5px solid #ffc107;">
+        <h3 style="color: #856404; margin-bottom: 1rem;">Medical Disclaimer</h3>
+        <p style="color: #856404; line-height: 1.8; margin-bottom: 1rem;">
+            <strong>This tool is for educational and informational purposes only.</strong> It is not intended to 
+            replace professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare 
+            professional for medical concerns.
+        </p>
+        
+        <h4 style="color: #856404; margin-bottom: 0.5rem;">Important Points:</h4>
+        <ul style="color: #856404; line-height: 1.6;">
+            <li>AI predictions are not 100% accurate</li>
+            <li>Many factors influence heart health beyond these parameters</li>
+            <li>Regular medical check-ups are essential</li>
+            <li>Consult a doctor for any health concerns</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card fade-in" style="margin-top: 2rem;">
+    <h2 style="color: #667eea; margin-bottom: 1.5rem; text-align: center;">
+        <i class="fas fa-database"></i> Data Parameters Explained
+    </h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px;">
+            <h4 style="color: #495057; margin-bottom: 1rem;">Basic Information</h4>
+            <ul style="color: #666; line-height: 1.6; list-style: none; padding: 0;">
+                <li style="margin-bottom: 0.5rem;"><strong>Age:</strong> Age in years</li>
+                <li style="margin-bottom: 0.5rem;"><strong>Sex:</strong> Biological sex (0=Female, 1=Male)</li>
+                <li><strong>Chest Pain:</strong> Type of chest pain experienced</li>
+            </ul>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px;">
+            <h4 style="color: #495057; margin-bottom: 1rem;">Vital Signs</h4>
+            <ul style="color: #666; line-height: 1.6; list-style: none; padding: 0;">
+                <li style="margin-bottom: 0.5rem;"><strong>Blood Pressure:</strong> Resting BP (mmHg)</li>
+                <li style="margin-bottom: 0.5rem;"><strong>Cholesterol:</strong> Serum cholesterol (mg/dl)</li>
+                <li><strong>Blood Sugar:</strong> Fasting glucose > 120 mg/dl</li>
+            </ul>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px;">
+            <h4 style="color: #495057; margin-bottom: 1rem;">Heart Tests</h4>
+            <ul style="color: #666; line-height: 1.6; list-style: none; padding: 0;">
+                <li style="margin-bottom: 0.5rem;"><strong>ECG:</strong> Resting electrocardiogram</li>
+                <li style="margin-bottom: 0.5rem;"><strong>Max Heart Rate:</strong> Peak rate during exercise</li>
+                <li><strong>Exercise Angina:</strong> Chest pain during exercise</li>
+            </ul>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px;">
+            <h4 style="color: #495057; margin-bottom: 1rem;">Advanced Tests</h4>
+            <ul style="color: #666; line-height: 1.6; list-style: none; padding: 0;">
+                <li style="margin-bottom: 0.5rem;"><strong>ST Depression:</strong> Exercise-induced changes</li>
+                <li style="margin-bottom: 0.5rem;"><strong>ST Slope:</strong> Shape of ST segment</li>
+                <li style="margin-bottom: 0.5rem;"><strong>Vessels:</strong> Fluoroscopy vessel count</li>
+                <li><strong>Thalassemia:</strong> Blood disorder test</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card fade-in" style="margin-top: 2rem; text-align: center;">
+    <h2 style="color: #667eea; margin-bottom: 1rem;">
+        <i class="fas fa-code"></i> Technical Implementation
+    </h2>
+    <p style="color: #666; margin-bottom: 2rem;">Built with modern web technologies and machine learning</p>
+    
+    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 2rem;">
+        <div style="text-align: center;">
+            <i class="fab fa-python" style="font-size: 3rem; color: #3776ab; margin-bottom: 0.5rem;"></i>
+            <p style="color: #666; font-weight: 500;">Python & Scikit-learn</p>
+        </div>
+        <div style="text-align: center;">
+            <i class="fas fa-server" style="font-size: 3rem; color: #000; margin-bottom: 0.5rem;"></i>
+            <p style="color: #666; font-weight: 500;">Flask Framework</p>
+        </div>
+        <div style="text-align: center;">
+            <i class="fab fa-html5" style="font-size: 3rem; color: #e34f26; margin-bottom: 0.5rem;"></i>
+            <p style="color: #666; font-weight: 500;">HTML5 & CSS3</p>
+        </div>
+        <div style="text-align: center;">
+            <i class="fab fa-js-square" style="font-size: 3rem; color: #f7df1e; margin-bottom: 0.5rem;"></i>
+            <p style="color: #666; font-weight: 500;">JavaScript</p>
+        </div>
+    </div>
+</div>
